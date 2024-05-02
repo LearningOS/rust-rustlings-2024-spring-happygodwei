@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -38,6 +37,15 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.count += 1;
+    self.items.push(value); // Add the new item to the end of the heap
+
+    // Percolate up: Reorder the heap to maintain the heap property
+    let mut idx = self.count; // Start at the end
+    while idx > 1 && (self.comparator)(&self.items[idx], &self.items[self.parent_idx(idx)]) {
+        self.items.swap(idx, idx/2); // Swap with parent
+        idx = idx/2; // Move up one level
+    }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -58,7 +66,15 @@ where
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
         //TODO
-		0
+		let left_idx = self.left_child_idx(idx);
+    let right_idx = self.right_child_idx(idx);
+
+    // Check if right child exists and if it's smaller than left child
+    if right_idx <= self.count && (self.comparator)(&self.items[right_idx], &self.items[left_idx]) {
+        right_idx
+    } else {
+        left_idx
+    }
     }
 }
 
@@ -79,13 +95,34 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + Clone,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
+        if self.count == 0 {
+            return None; // Return None if the heap is empty
+        }
+    
+        let root = self.items[1].clone(); // Save the root value
+        self.items.swap(1, self.count); // Swap root with last element
+        self.items.pop(); // Remove the last element (previously the root)
+        self.count -= 1; // Decrease count
+    
+        // Percolate down: Reorder the heap to maintain the heap property
+        let mut idx = 1;
+        while self.children_present(idx) {
+            let smallest_child = self.smallest_child_idx(idx);
+            if (self.comparator)(&self.items[smallest_child], &self.items[idx]) {
+                self.items.swap(smallest_child, idx);
+                idx = smallest_child;
+            } else {
+                break;
+            }
+        }
+    
+        Some(root)
     }
 }
 
